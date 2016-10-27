@@ -1,101 +1,128 @@
 #lang racket
 
 (require racket/system)
+(require "sphero-api.rkt")
 
-;;;;;;;;;;;;;
-;; Helpers ;;
-;;;;;;;;;;;;;
+;; Port for the Sphero bluetooth connection.
+(define PORT "/dev/tty.Sphero-GYB-AMP-SPP")
+;(define PORT "sphero.txt")
 
-;; Pretty print a number in hexadecimal.
-(define (hex-format a-number)
-  (define digits "0123456789ABCDEF")
-  (string (string-ref digits (quotient a-number 16))
-          (string-ref digits (modulo a-number 16))))
+;; Create a connection to the Sphero.
+(define sphero (connect-sphero PORT))
 
-;; Print a packet
-(define (pprint-packet packet)
-  (map (lambda (byte)
-         (let ((v (hex-format byte)))
-           (display (format "~s " v))))
-       packet))
+(color sphero 255 0 0)
+;(roll sphero 150 0)
 
-;;;;;;;;;;;;;;;;;;;;;;;;
-;; Checksum generator ;;
-;;;;;;;;;;;;;;;;;;;;;;;;
+(sleep 20)
 
-(define (checksum bytes)
-  (bitwise-xor
-   (modulo
-    (apply + (drop bytes 2))
-    256)
-   #xFF))
-
-;;;;;;;;;;;;;;;;;;;;;;;
-;; Connect to Sphero ;;
-;;;;;;;;;;;;;;;;;;;;;;;
-
-(define port "/dev/tty.Sphero-GYB-AMP-SPP")
-
-(displayln "Opening output file..")
-(define out (open-output-file port #:mode 'binary #:exists 'append))
-(displayln "Opened output file")
-
-(displayln "Opening input file..")
-(define in  (open-input-file port #:mode 'binary))
-(displayln "Opened input file")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Packet construction ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Header
-(define SOP1 #xFF)
-(define SOP2 #xFE)
-(define DID  #x02)
-(define CID  #x20)
-(define SEQ  #x00) ;; A counter for the number of messages we have sent already.
-
-(define HEAD (list SOP1 SOP2 DID CID SEQ))
-
-;; Payload
-
-(define DLEN       #x05)
-(define COLOR      (list #x00 #x80 #x00))
-(define PERSISTENT (list #x01))
-(define DATA       (append COLOR PERSISTENT))
-(define BODY       (cons DLEN DATA))
-
-;; Checksum
-
-(define CHK (checksum (append HEAD BODY)))
-
-;; Packet
-
-(define PACKET (append HEAD BODY (list CHK)))
-
-;;;;;;;;;;;;;;;;;;;;
-;; Sending packet ;;
-;;;;;;;;;;;;;;;;;;;;
-
-(displayln HEAD)
-(displayln BODY)
-(displayln CHK)
-
-(displayln PACKET)
-;;(pprint-packet PACKET)
-
-(define bytes (list->bytes PACKET))
-(displayln bytes)
-
-(displayln (write-bytes (list->bytes PACKET) out))
+(disconnect-sphero sphero)
 
 
 
-;;;;;;;;;;;;;;;;;;;;;;
-;; Close connection ;;
-;;;;;;;;;;;;;;;;;;;;;;
 
-(displayln "Closing..")
-(sleep 10)
-(close-output-port out)
-(close-input-port in)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; Packet construction: Set Color ;;
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; Header
+;; (define SOP1 #xFF)
+;; (define SOP2 #xFE)
+;; (define DID  #x02)
+;; (define CID  #x20)
+;; (define SEQ  #x00) ;; A counter for the number of messages we have sent already.
+
+;; (define HEAD (list SOP1 SOP2 DID CID SEQ))
+
+;; ;; Payload
+
+;; (define DLEN       #x05)
+;; (define COLOR      (list #x00 #x00 #xFF)) ; Actually Blue Green Red
+;; (define PERSISTENT (list #x01))
+;; (define DATA       (append COLOR PERSISTENT))
+;; (define BODY       (cons DLEN DATA))
+
+;; ;; Checksum
+
+;; (define CHK (checksum (append HEAD BODY)))
+
+;; ;; Packet
+
+;; (define COlOR (append HEAD BODY (list CHK)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Packet construction: Roll ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; ;; Header
+;; (define SOP1 #xFF) ;; Start of the packet
+;; (define SOP2 #xFE) ;; Message options (see: "SOP2 bitfield encoding" at https://sdk.sphero.com/api-reference/api-packet-format/)
+;; (define DID  #x02) ;; Can be #x02 or #x00. Differs per command. (see https://sdk.sphero.com/api-reference/api-quick-reference/)
+;; (define CID  #x30) ;; Command id (#x30 = rolling)
+;; (define SEQ  #x00) ;; A counter for the number of messages we have sent already.
+
+;; (define HEAD (list SOP1 SOP2 DID CID SEQ))
+
+;; ;; Payload
+
+;; (define DLEN       #x05)                  ;; Length of the arguments + checksum 
+;; (define SPEED      (list #x32 #x00 #x64)) ;; Speed (1 byte) | Heading  (2 bytes)
+;; (define STATE      (list #x01))           ;; Whatever the fuck this means.
+;; (define DATA       (append SPEED STATE))  
+;; (define BODY       (cons DLEN DATA))
+
+;; ;; Checksum
+
+;; (define CHK (checksum (append HEAD BODY)))
+
+;; ;; Packet
+
+;; (define ROLL (append HEAD BODY (list CHK)))
+
+
