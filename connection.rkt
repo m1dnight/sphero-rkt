@@ -12,6 +12,7 @@
 
 (require "packets.rkt")
 (require "logging.rkt")
+(require file/sha1)
 
 ;; We need a data type that will represent the connections to the
 ;; Sphero. We have an incoming and an outgoing connection.
@@ -42,5 +43,5 @@
 (define (send-packet conn bytes)
   (let* ((out  (connection-out conn))
          (sent (write-bytes bytes out)))
-    (begin (log-info (format "Sent packet: ~a" bytes))
+    (begin (log-info (format "Sent packet: ~a" (bytes->hex-string bytes)))
            (flush-output out))))

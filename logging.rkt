@@ -1,10 +1,11 @@
 #lang racket
 
+
 (provide log-error log-info log-warning)
 
 (define (log-error msg)
   (displayln
-   (format "ERROR: ~a" msg)))
+   (format "~a :: ERROR: ~a" msg (~a (current-seconds) #:max-width 10))))
 
 (define (log-info msg)
   (displayln

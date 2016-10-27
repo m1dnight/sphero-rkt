@@ -3,48 +3,23 @@
 (require racket/system)
 (require "sphero-api.rkt")
 
-;; Port for the Sphero bluetooth connection.
+
 (define PORT "/dev/tty.Sphero-GYB-AMP-SPP")
 ;(define PORT "sphero.txt")
 
-;; Create a connection to the Sphero.
 (define sphero (connect-sphero PORT))
 
-(color sphero 255 0 0)
-;(roll sphero 150 0)
-
+(color sphero 0 255 0)
+(roll  sphero 40 0)
+(sleep 2)
+(stop sphero)
+(sleep 2)
+(roll  sphero 40 0)
+(sleep 2)
+(stop sphero)
 (sleep 20)
 
 (disconnect-sphero sphero)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
