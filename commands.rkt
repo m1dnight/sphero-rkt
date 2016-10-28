@@ -9,7 +9,7 @@
 (require "packets.rkt")
 (require "sphero-commands.rkt")
 
-(provide cmd-roll cmd-color)
+(provide cmd-roll cmd-color cmd-set-cd)
 
 ;; Each function in this module generates bytes to send over the wire
 ;; to the Sphero.
@@ -25,7 +25,7 @@
   (let ((SOP2     #xFE)
         (DID      #x02)
         (CID      CMD_ROLL)
-        (SEQ      #x00)
+        (SEQ      seq)
         ;; data
         (SPEED    speed)
         (HEADING1 (quotient heading   256))
@@ -47,9 +47,36 @@
   (let ((SOP2     #xFE)
         (DID      #x02)
         (CID      CMD_SET_RGB_LED)
-        (SEQ      #x00)
+        (SEQ      seq)
         ;; data
         (COLOR    (list red green blue)) ;; Reverse 
         (FLAG     #x01)) 
     (make-packet SOP2 DID CID SEQ (append COLOR (list FLAG)))))
-    
+
+
+;; Packet format
+;; +-----+-----+-----+------+------+-----+------+-----+------+------+
+;; | DID | CID | SEQ | DLEN | Meth | Xt  | Xspd | Yt  | Yspd | Dead |
+;; +-----+-----+-----+------+------+-----+------+-----+------+------+
+;; | 02h | 12h |     | 07h  | val  | val | val  | val | val  | val  |
+;; +-----+-----+-----+------+------+-----+------+-----+------+------+
+
+;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+;; | Meth       | Detection method type to use. Currently the only method supported is 01h. Use 00h to completely disable this service.                                |
+;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+;; | Xt, Yt     | An 8-bit settable threshold for the X (left/right) and Y (front/back) axes of Sphero. A value of 00h disables the contribution of that axis.         |
+;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+;; | Xspd, Yspd | An 8-bit settable speed value for the X and Y axes. This setting is ranged by the speed, then added to Xt, Yt to generate the final threshold value. |
+;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+;; | Dead       | An 8-bit post-collision dead time to prevent retriggering; specified in 10ms increments.                                                             |
+;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+(define (cmd-set-cd x-threshold y-threshold x-speed y-speed dead-time seq)
+  (let* ((SOP2     #xFE)
+         (DID      #x02)
+         (CID      CMD_SET_COLLISION_DET)
+         (SEQ      seq)
+         ;; data
+         (METH     #x01)
+         (DATA    (list METH x-threshold x-speed y-threshold y-speed dead-time))) 
+    (make-packet SOP2 DID CID SEQ (cons METH DATA))))

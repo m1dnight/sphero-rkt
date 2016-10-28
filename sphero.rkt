@@ -29,8 +29,7 @@
 
               (square (- n 1)))))
 
-(square 4)
-
+(set-collision-detection sphero)
 ;; We need to stop sphero before we disconnect otherwise he will run forever.
 (stop sphero)
 (disconnect-sphero sphero)

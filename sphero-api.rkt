@@ -11,6 +11,7 @@
 (provide color)
 (provide stop)
 (provide roll-for)
+(provide set-collision-detection)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; BASIC OPERATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -42,6 +43,16 @@
 ;; blue : blue value
 (define (color-rgb conn red green blue)
   (let ((packet (cmd-color red green blue 0)))
+    (send-packet conn packet)))
+
+;; Enables the call of collisions on the Sphero.
+(define (set-collision-detection conn)
+  (define x-threshold #x01)
+  (define y-threshold #x01)
+  (define x-speed     #x01)
+  (define y-speed     #x01)
+  (define dead-time   #x01)
+  (let ((packet (cmd-set-cd x-threshold y-threshold x-speed y-speed dead-time 0)))
     (send-packet conn packet)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

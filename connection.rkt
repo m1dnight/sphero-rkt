@@ -24,6 +24,11 @@
 (define (sphero-connect port)
   (let ((in-port  (open-input-file port #:mode 'binary))
         (out-port (open-output-file port #:mode 'binary #:exists 'append)))
+    
+    ;; (thread (lambda ()
+    ;;           (let ((line (read-line in-port)))
+    ;;             (display line))))
+    
     (log-info (format "Created input and output port on ~a" port))
     (connection in-port out-port)))
 
