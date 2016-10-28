@@ -53,7 +53,6 @@
         (FLAG     #x01)) 
     (make-packet SOP2 DID CID SEQ (append COLOR (list FLAG)))))
 
-
 ;; Packet format
 ;; +-----+-----+-----+------+------+-----+------+-----+------+------+
 ;; | DID | CID | SEQ | DLEN | Meth | Xt  | Xspd | Yt  | Yspd | Dead |

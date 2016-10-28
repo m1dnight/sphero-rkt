@@ -12,6 +12,7 @@
 
 (require "packets.rkt")
 (require "logging.rkt")
+(require "parser.rkt")
 (require file/sha1)
 
 ;; We need a data type that will represent the connections to the
@@ -24,12 +25,10 @@
 (define (sphero-connect port)
   (let ((in-port  (open-input-file port #:mode 'binary))
         (out-port (open-output-file port #:mode 'binary #:exists 'append)))
-    
-    ;; (thread (lambda ()
-    ;;           (let ((line (read-line in-port)))
-    ;;             (display line))))
-    
+    ;; Attach the input reader
+    (thread (lambda () (packet-parser in-port)))
     (log-info (format "Created input and output port on ~a" port))
+    ;; Return a struct containing both these things.
     (connection in-port out-port)))
 
 ;; sphero-disconnect takes in the struct created above and closes both

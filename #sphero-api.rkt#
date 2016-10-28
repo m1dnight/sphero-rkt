@@ -51,7 +51,7 @@
   (define y-threshold #x40)
   (define x-speed     #x50)
   (define y-speed     #x20)
-  (define dead-time   #xFF)
+  (define dead-time   #x)
   (let ((packet (cmd-set-cd x-threshold y-threshold x-speed y-speed dead-time 0)))
     (send-packet conn packet)))
 

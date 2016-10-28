@@ -8,6 +8,8 @@
 
 (provide make-packet)
 (provide pprint-packet)
+(provide hex-format)
+(provide print-bytestring-hex)
 
 ;; +===========+==========================================+===================================================================+
 ;; | NAME      |  Description                             |  Description                                                      |
@@ -46,6 +48,12 @@
          (let ((v (hex-format byte)))
            v))
        packet))
+
+;; Takes in a byte string and then prettyprints it as hexadecimal.
+(define (print-bytestring-hex byte-string)
+  (let* ((bs (bytes->list byte-string))
+         (str (map hex-format bs)))
+    str))
 
 ;; checksum generates a checksum for a package by summing all the
 ;; bytes starting (and including) from the DID, taking the sum of them

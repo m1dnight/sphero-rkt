@@ -4,8 +4,8 @@
 (require "sphero-api.rkt")
 (require "colors.rkt")
 
-;(define PORT "/dev/tty.Sphero-GYB-AMP-SPP")
-(define PORT "sphero.txt")
+(define PORT "/dev/tty.Sphero-GYB-AMP-SPP")
+;(define PORT "sphero.txt")
 (define sphero (connect-sphero PORT))
 
 ;; Variables for running.
@@ -30,6 +30,10 @@
               (square (- n 1)))))
 
 (set-collision-detection sphero)
+
 ;; We need to stop sphero before we disconnect otherwise he will run forever.
+
+(sleep 10)
 (stop sphero)
 (disconnect-sphero sphero)
+
