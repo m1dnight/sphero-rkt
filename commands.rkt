@@ -29,8 +29,8 @@
         (SEQ      #x00)
         ;; data
         (SPEED    speed)
-        (HEADING1 #x00)
-        (HEADING2 #x00)
+        (HEADING1 (quotient heading   256))
+        (HEADING2 (modulo heading 256))
         (STATE    #x01)) ;; Unsure what the "state" flag does. Works when we put it on 1.
     (make-packet SOP2 DID CID SEQ (list SPEED HEADING1 HEADING2 STATE))))
 

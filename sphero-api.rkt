@@ -3,15 +3,21 @@
 (require "connection.rkt")
 (require "commands.rkt")
 (require "logging.rkt")
+(require "colors.rkt")
 
 (provide connect-sphero)
 (provide disconnect-sphero)
 (provide roll)
 (provide color)
 (provide stop)
+(provide roll-for)
 
 
-;; connect-sphero requires you to pass a port and then a value is
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; BASIC OPERATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; connect-sphero requires you to pass a port and then a valu is
 ;; returned representing the connection.
 (define (connect-sphero port)
   (log-info (format "Connecting Sphero on port ~a" port))
@@ -32,18 +38,36 @@
   (let ((packet (cmd-roll speed heading 0))) ;; seq is hardcoded atm
     (send-packet conn packet)))
 
+;; Changes the color of the Sphero.
+;; conn : A Sphero connection created using above functions.
+;; red  : red value
+;; green: green value
+;; blue : blue value
+(define (color-rgb conn red green blue)
+  (let ((packet (cmd-color red green blue 0)))
+    (send-packet conn packet)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; DERIVED OPERATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Derived operations use the basic API operations to create some
+;; obvious abstractions.
+
 
 ;; Stops the Sphero from rolling any further. Provided for
 ;; convenience.
 (define (stop conn)
   (roll conn 0 0))
 
+;; Roll for n seconds.
+(define (roll-for conn speed heading interval)
+  (roll conn speed heading)
+  (sleep interval))
 
-;; Changes the color of the Sphero.
-;; conn : A Sphero connection created using above functions.
-;; red  : red value
-;; green: green value
-;; blue : blue value
-(define (color conn red green blue)
-  (let ((packet (cmd-color red green blue 0)))
-    (send-packet conn packet)))
+(define (color conn c)
+  (let ((valid? (is-color? c)))
+    (if valid?
+        (apply color-rgb (cons conn valid?))
+        (log-error "Invalid color provided!"))))
+  
