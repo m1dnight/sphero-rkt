@@ -31,10 +31,8 @@
 ;; |           |                                          |  of the data payload, bit inverted (1's complement)               |
 ;; +-----------+------------------------------------------+-------------------------------------------------------------------+
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helper Functions
-
 
 ;; Pretty print a number in hexadecimal.
 (define (hex-format a-number)

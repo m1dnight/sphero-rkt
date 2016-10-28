@@ -12,7 +12,6 @@
 (provide stop)
 (provide roll-for)
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; BASIC OPERATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,12 +22,10 @@
   (log-info (format "Connecting Sphero on port ~a" port))
   (sphero-connect port))
 
-
 ;; Disconnects from the Sphero and cleans up any open connections.
 (define (disconnect-sphero sphero)
   (log-info "Disconnecting Sphero")
   (sphero-disconnect sphero))
-
 
 ;; Roll expectes three parameters.
 ;; conn   : A Sphero connection created using above functions.
@@ -53,7 +50,6 @@
 
 ;; Derived operations use the basic API operations to create some
 ;; obvious abstractions.
-
 
 ;; Stops the Sphero from rolling any further. Provided for
 ;; convenience.

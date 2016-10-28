@@ -4,7 +4,6 @@
 (require "sphero-api.rkt")
 (require "colors.rkt")
 
-
 ;(define PORT "/dev/tty.Sphero-GYB-AMP-SPP")
 (define PORT "sphero.txt")
 (define sphero (connect-sphero PORT))

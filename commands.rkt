@@ -14,7 +14,6 @@
 ;; Each function in this module generates bytes to send over the wire
 ;; to the Sphero.
 
-
 ;; Packet format
 ;; +-----+-----+-----+------+-------+---------+---------+-------+
 ;; | DID | CID | SEQ | DLEN | Speed | Heading | Heading | STATE |
@@ -33,7 +32,6 @@
         (HEADING2 (modulo heading 256))
         (STATE    #x01)) ;; Unsure what the "state" flag does. Works when we put it on 1.
     (make-packet SOP2 DID CID SEQ (list SPEED HEADING1 HEADING2 STATE))))
-
 
 ;; Packet format
 ;; +-----+-----+-----+------+-------+-------+-------+------+

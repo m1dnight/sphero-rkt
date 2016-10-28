@@ -1,6 +1,5 @@
 #lang racket
 
-
 (provide log-error log-info log-warning)
 
 (define (log-error msg)
