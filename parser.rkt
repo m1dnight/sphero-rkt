@@ -45,6 +45,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Sphero async response packets are always of the following form.
+;;
+;; Async packets do not have MRSP or SEQ bytes. The ID CODE
+;; identifiers what type of data is arriving in the packet.
+;;
 ;; +--------------------------------------------------------+
 ;; | SOP1 | SOP2 | ID_CODE | DLEN-HI | DLEN-LO | DATA | CHK |
 ;; +--------------------------------------------------------+
@@ -56,6 +60,8 @@
         (read-single port)
         byte)))
 
+;; Eats n bytes and returns a list where the first byte is in the head
+;; of the list.
 (define (eat-n-bytes port n acc)
   (if (> n 0)
       (let ((b (read-single port)))
@@ -76,8 +82,9 @@
 ;; Parses the SOP2 header field.
 (define (parse-sop2 port)
   (let ((byte (read-single port)))
-    (when (eq? #xFE byte)
-        (parse-id-code port))))
+    ;; #xFE indicates an async packet.
+    (cond ((eq? #xFE byte)
+           (parse-id-code port)))))
 
 ;; Assumes the following byte is an id_code, dispatches on that value.
 (define (parse-id-code port)
@@ -88,11 +95,13 @@
       (else (log-error (format "Unsupported ID_CODE: ~a" (hex-format byte)))))))
 
 ;; Parses the next packet as a two-byte size indication and then eats
-;; all the data as well and returns it in a list.
+;; all the data as well and returns it in a list. Note that multi-byte
+;; numbers arive most-significant-bit first
+;; (https://sdk.sphero.com/api-reference/api-packet-format/)
 (define (parse-dlen port)
   (let* ((high (read-single port))
          (low  (read-single port))
-         (len  (integer-bytes->integer (list->bytes (list low high)) 2 #f)))
+         (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
     (let ((data (eat-n-bytes port len '())))
       data)))
 
@@ -101,6 +110,12 @@
 
 ;; Reference implementation:
 ;; Collision: https://github.com/orbotix/sphero.js/blob/75ccac9caaa823da2ff816c27afac509c34dafc5/lib/parsers/async.js#L447-L503
+;; +------------+------------+------------+-------------+------------+------------+-----------+------------+
+;; |     X      |     Y      |     Z      |    Axis     | xMagnitude | yMagnitude |   Speed   | Timestamp  |
+;; +------------+------------+------------+-------------+------------+------------+-----------+------------+
+;; | 16-bit val | 16-bit val | 16-bit val | 8-bit field | 16-bit val | 16-bit val | 8-bit val | 32-bit val |
+;; +------------+------------+------------+-------------+------------+------------+-----------+------------+
+
 
 (define (parse-cd port)
   (log-info "Collision detected!")
@@ -125,7 +140,7 @@
 (define (parse-two-byte-int port)
   (let* ((high (read-single port))
          (low  (read-single port))
-         (len  (integer-bytes->integer (list->bytes (list low high)) 2 #f)))
+         (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
     len))
 
 (define (debug port)

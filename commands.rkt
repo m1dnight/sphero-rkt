@@ -53,6 +53,24 @@
         (FLAG     #x01)) 
     (make-packet SOP2 DID CID SEQ (append COLOR (list FLAG)))))
 
+
+;; Packet format
+;; +-----+-----+-----+------+
+;; | DID | CID | SEQ | DLEN |
+;; +-----+-----+-----+------+
+;; | 02h | 22h |     | 01h  |
+;; +-----+-----+-----+------+
+
+(define (cmd-color-get seq)
+  (let ((SOP2     #xFE)
+        (DID      #x02)
+        (CID      CMD_GET_RGB_LED)
+        (SEQ      seq)) 
+    (make-packet SOP2 DID CID SEQ '())))
+
+
+
+
 ;; Packet format
 ;; +-----+-----+-----+------+------+-----+------+-----+------+------+
 ;; | DID | CID | SEQ | DLEN | Meth | Xt  | Xspd | Yt  | Yspd | Dead |
