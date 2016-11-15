@@ -62,9 +62,9 @@
 ;; Enables the call of collisions on the Sphero.
 (define (set-collision-detection conn)
   (define x-threshold #x40)
-  (define y-threshold #x40)
-  (define x-speed     #x50)
-  (define y-speed     #x20)
+  (define y-threshold #x00)
+  (define x-speed     #xFF)
+  (define y-speed     #xFF)
   (define dead-time   #xFF)
   (let ((packet (cmd-set-cd x-threshold y-threshold x-speed y-speed dead-time 0)))
     (send-packet conn packet)))

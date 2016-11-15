@@ -82,38 +82,35 @@
     ;; packet.
     (cond ((eq? #xFF byte)
            (parse-sop2 port)))
-    
+    (log-error (format "Dropping ~a" (hex-format byte)))
     ;; Continue on to the next one.
     (parse-sop1 port)))
 
 ;; Parses the SOP2 header field.
 (define (parse-sop2 port)
   (let ((byte (read-single port)))
-    ;; #xFE indicates an async packet.
-    (cond ((eq? #xFE byte)
-           (parse-id-code port))
-          ((eq? #xFF byte)
-           (parse-ack port)))))
+    
+    (cond
+      ;; #xFE indicates an async packet.
+      ((eq? #xFE byte)
+       (parse-async port))
+      ;; #xFF indicates an ACK.
+      ((eq? #xFF byte)
+       (parse-ack port)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Async
 
 ;; Assumes the following byte is an id_code, dispatches on that value.
-(define (parse-id-code port)
+(define (parse-async port)
   (let ((byte (read-single port)))
     (case byte
+      ;; #x07 is a collision detection packet.
       ((eq? #x07 byte)
        (parse-cd port))
       (else (log-error (format "Unsupported ID_CODE: ~a" (hex-format byte)))))))
 
-;; Parses the next packet as a two-byte size indication and then eats
-;; all the data as well and returns it in a list. Note that multi-byte
-;; numbers arive most-significant-bit first
-;; (https://sdk.sphero.com/api-reference/api-packet-format/)
-(define (parse-dlen port)
-  (let* ((high (read-single port))
-         (low  (read-single port))
-         (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
-    (let ((data (eat-n-bytes port len '())))
-      data)))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Ack
 
 ;; Parses an acknowledgement.
 (define (parse-ack port)
@@ -126,13 +123,24 @@
       ((eq? mrsp #x00)
        (parse-seq port)))))
 
-
 (define (parse-seq port)
-  (let ((seq  (read-single port))
-        (dlen (read-single port))
-        (chk  (read-single port)))
-    (log-info (format "SEQ Response : ~a" (hex-format seq)))
-    (log-info (format "DLEN Response: ~a" (hex-format dlen)))))
+  (let* ((seq  (read-single port))
+         (dlen (read-single port))
+         (data (eat-n-bytes port dlen '())))
+    (log-info (format "ACK ~a" (hex-format seq)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Helpers
+
+;; Parses the next packet as a two-byte size indication and then eats
+;; all the data as well and returns it in a list. Note that multi-byte
+;; numbers arive most-significant-bit first
+;; (https://sdk.sphero.com/api-reference/api-packet-format/)
+(define (parse-dlen port)
+  (let* ((high (read-single port))
+         (low  (read-single port))
+         (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
+    len))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -151,6 +159,7 @@
 
 ;; Reference implementation:
 ;; Collision: https://github.com/orbotix/sphero.js/blob/75ccac9caaa823da2ff816c27afac509c34dafc5/lib/parsers/async.js#L447-L503
+;; The X,Y and Z values are signed.
 ;; +------------+------------+------------+-------------+------------+------------+-----------+------------+
 ;; |     X      |     Y      |     Z      |    Axis     | xMagnitude | yMagnitude |   Speed   | Timestamp  |
 ;; +------------+------------+------------+-------------+------------+------------+-----------+------------+
@@ -161,9 +170,10 @@
 (define (parse-cd port)
   (log-info "Collision detected!")
   (let ((dlen (parse-dlen port)))
-    (let* ((x     (parse-two-byte-int port))
-           (y     (parse-two-byte-int port))
-           (z     (parse-two-byte-int port))
+    (log-info (format "Collision dlen: ~a" dlen))
+    (let* ((x     (parse-two-byte-int-s port))
+           (y     (parse-two-byte-int-s port))
+           (z     (parse-two-byte-int-s port))
            (axis  (read-single port))
            (xmag  (parse-two-byte-int port))
            (ymag  (parse-two-byte-int port))
@@ -182,6 +192,12 @@
   (let* ((high (read-single port))
          (low  (read-single port))
          (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
+    len))
+
+(define (parse-two-byte-int-s port)
+  (let* ((high (read-single port))
+         (low  (read-single port))
+         (len  (integer-bytes->integer (list->bytes (list high low)) #t #t 0  2)))
     len))
 
 (define (debug port)

@@ -4,7 +4,7 @@
 
 (define (log-error msg)
   (displayln
-   (format "~a :: ERROR: ~a" msg (~a (current-seconds) #:max-width 10))))
+   (format "~a :: ERROR: ~a" (~a (current-seconds) #:max-width 10) msg)))
 
 (define (log-info msg)
   (displayln

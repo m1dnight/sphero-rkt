@@ -31,13 +31,14 @@
 
 
 ;;(square 5)
-;(set-collision-detection sphero)
+(set-collision-detection sphero)
 (color sphero '#:red)
-(color-rgb? sphero)
-;;(roll-for sphero 250 0 5)
+;(color-rgb? sphero)
+(roll-for sphero 100 0 2)
 ;
 ;;; We need to stop sphero before we disconnect otherwise he will run forever.
 ;
-(sleep 10)
 (stop sphero)
+(sleep 10)
+
 (disconnect-sphero sphero)
