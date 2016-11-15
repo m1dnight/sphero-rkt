@@ -34,7 +34,9 @@
 ;; speed  : A value between zero and 255.
 ;; heading: Degrees relative to the Sphero's calibration. I.e., between 0 and 389.
 (define (roll conn speed heading)
-  (let ((packet (cmd-roll speed heading 0))) ;; seq is hardcoded atm
+  (let* ((seq    (next-seq conn))
+         (packet (cmd-roll speed heading seq))) ;; seq is hardcoded atm
+    (log-info (format "CMD ~a roll ~a ~a" seq speed heading))    
     (send-packet conn packet)))
 
 ;; Changes the color of the Sphero.
@@ -43,14 +45,18 @@
 ;; green: green value
 ;; blue : blue value
 (define (color-rgb conn red green blue)
-  (let ((packet (cmd-color red green blue 0)))
+  (let* ((seq    (next-seq conn))
+         (packet (cmd-color red green blue seq)))
+    (log-info (format "CMD ~a set RGB ~a ~a ~a" seq red green blue))        
     (send-packet conn packet)))
 
 
 ;; Retrieves the color of the Sphero.
 ;; conn : A Sphero connection created using above functions.
 (define (color-rgb? conn)
-  (let ((packet (cmd-color-get 0)))
+  (let* ((seq    (next-seq conn))
+         (packet (cmd-color-get seq)))
+    (log-info (format "CMD ~a get RGB" seq))            
     (send-packet conn packet)))
 
 ;; Enables the call of collisions on the Sphero.

@@ -9,6 +9,8 @@
 (provide sphero-connect)
 (provide sphero-disconnect)
 (provide send-packet)
+(provide connection-seq)
+(provide next-seq)
 
 (require "packets.rkt")
 (require "logging.rkt")
@@ -17,7 +19,7 @@
 
 ;; We need a data type that will represent the connections to the
 ;; Sphero. We have an incoming and an outgoing connection.
-(struct connection (in out))
+(struct connection (in out seq))
 
 ;; sphero-connect takes in a port and then creates an input and an
 ;; output port and returns in the form of a struct. Normally this
@@ -29,7 +31,10 @@
     (thread (lambda () (packet-parser in-port)))
     (log-info (format "Created input and output port on ~a" port))
     ;; Return a struct containing both these things.
-    (connection in-port out-port)))
+    (connection in-port out-port (let ((c 0))
+                                   (lambda (x)
+                                     (set! c (+ 1 c))                                   
+                                     c)))))
 
 ;; sphero-disconnect takes in the struct created above and closes both
 ;; the input and output port.
@@ -49,3 +54,8 @@
          (sent (write-bytes bytes out)))
     (begin (log-info (format "Sent packet: ~a" (bytes->hex-string bytes)))
            (flush-output out))))
+
+;; Increments and returns the seq number.
+(define (next-seq conn)
+  ((connection-seq conn) 'nothing))
+
