@@ -10,11 +10,15 @@
 (require "logging.rkt")
 
 (provide packet-parser)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; SYNCHRONOUS PACKAGES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Sphero response packets are always of the following form.
+;;  ____                   
+;; / ___| _   _ _ __   ___ 
+;; \___ \| | | | '_ \ / __|
+;;  ___) | |_| | | | | (__ 
+;; |____/ \__, |_| |_|\___|
+;;        |___/            
+
+;; Sphero response packets are always of the following form. This is the so-called "Simple Response".
 ;; +---------------------------------------+
 ;; | SOP1 | SOP2 | MRSP | SEQ | DLEN | CHK |
 ;; +---------------------------------------+
@@ -37,12 +41,15 @@
 ;; | CHK  | Checksum                                      | Packet checksum (as computed above)                                                      |
 ;; +------+-----------------------------------------------+------------------------------------------------------------------------------------------+
 
+;;     _                         
+;;    / \   ___ _   _ _ __   ___ 
+;;   / _ \ / __| | | | '_ \ / __|
+;;  / ___ \\__ \ |_| | | | | (__ 
+;; /_/   \_\___/\__, |_| |_|\___|
+;;              |___/            
+
 ;; For now we assume only async packages. This means that the second
 ;; value (SOP2) will always be #xFE.
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; ASYNCHRONOUS PACKAGES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Sphero async response packets are always of the following form.
 ;;
@@ -73,8 +80,8 @@
   (let ((byte (read-single port)))
     ;; The first byte _has_ to be #xFF. That signifies the start of a
     ;; packet.
-    (when (eq? #xFF byte)
-        (parse-sop2 port))
+    (cond ((eq? #xFF byte)
+           (parse-sop2 port)))
     
     ;; Continue on to the next one.
     (parse-sop1 port)))
@@ -84,7 +91,9 @@
   (let ((byte (read-single port)))
     ;; #xFE indicates an async packet.
     (cond ((eq? #xFE byte)
-           (parse-id-code port)))))
+           (parse-id-code port))
+          ((eq? #xFF byte)
+           (parse-ack port)))))
 
 ;; Assumes the following byte is an id_code, dispatches on that value.
 (define (parse-id-code port)
@@ -104,6 +113,38 @@
          (len  (integer-bytes->integer (list->bytes (list high low)) #f #t 0  2)))
     (let ((data (eat-n-bytes port len '())))
       data)))
+
+
+;; Parses an acknowledgement.
+(define (parse-ack port)
+  (parse-mrsp port))
+
+;; MSRP should be #x00 to indicate success.
+(define (parse-mrsp port)
+  (let* ((mrsp (read-single port)))
+    (cond
+      ((eq? mrsp #x00)
+       (parse-seq port)))))
+
+
+(define (parse-seq port)
+  (let ((seq  (read-single port))
+        (dlen (read-single port))
+        (chk  (read-single port)))
+    (log-info (format "SEQ Response : ~a" (hex-format seq)))
+    (log-info (format "DLEN Response: ~a" (hex-format dlen)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Get Rgb Color Response
+
+;; +------+-------+-------+-------+
+;; | DLEN |  RED  | GREEN | BLUE  |
+;; +------+-------+-------+-------+
+;; | 04h  | value | value | value |
+;; +------+-------+-------+-------+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collision Detection

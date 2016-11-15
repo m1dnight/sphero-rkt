@@ -12,6 +12,7 @@
 (provide stop)
 (provide roll-for)
 (provide set-collision-detection)
+(provide color-rgb?)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; BASIC OPERATIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,6 +44,13 @@
 ;; blue : blue value
 (define (color-rgb conn red green blue)
   (let ((packet (cmd-color red green blue 0)))
+    (send-packet conn packet)))
+
+
+;; Retrieves the color of the Sphero.
+;; conn : A Sphero connection created using above functions.
+(define (color-rgb? conn)
+  (let ((packet (cmd-color-get 0)))
     (send-packet conn packet)))
 
 ;; Enables the call of collisions on the Sphero.
@@ -77,4 +85,3 @@
     (if valid?
         (apply color-rgb (cons conn valid?))
         (log-error "Invalid color provided!"))))
-  

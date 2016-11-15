@@ -17,13 +17,13 @@
  (when (> n 0)
      (begin  (color sphero '#:red)
              (roll-for  sphero speed 0 1)
-             
+
              (color sphero '#:white)
              (roll-for  sphero speed 90 1)
-             
+
              (color sphero '#:blue)
              (roll-for  sphero speed 180 1)
-             
+
              (color sphero '#:orange)
              (roll-for  sphero speed 270 1)
 
@@ -31,13 +31,13 @@
 
 
 ;;(square 5)
-(set-collision-detection sphero)
+;(set-collision-detection sphero)
 (color sphero '#:red)
-(roll-for sphero 250 0 5)
+(color-rgb? sphero)
+;;(roll-for sphero 250 0 5)
 ;
 ;;; We need to stop sphero before we disconnect otherwise he will run forever.
 ;
 (sleep 10)
 (stop sphero)
 (disconnect-sphero sphero)
-

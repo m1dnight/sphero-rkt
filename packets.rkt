@@ -1,7 +1,7 @@
 #lang racket
 
-;;  ____            _        _       
-;; |  _ \ __ _  ___| | _____| |_ ___ 
+;;  ____            _        _
+;; |  _ \ __ _  ___| | _____| |_ ___
 ;; | |_) / _` |/ __| |/ / _ \ __/ __|
 ;; |  __/ (_| | (__|   <  __/ |_\__ \
 ;; |_|   \__,_|\___|_|\_\___|\__|___/
@@ -10,6 +10,7 @@
 (provide pprint-packet)
 (provide hex-format)
 (provide print-bytestring-hex)
+
 
 ;; +===========+==========================================+===================================================================+
 ;; | NAME      |  Description                             |  Description                                                      |
@@ -32,6 +33,17 @@
 ;; | CHK       |  Checksum                                |  The modulo 256 sum of all the bytes from the DID through the end |
 ;; |           |                                          |  of the data payload, bit inverted (1's complement)               |
 ;; +-----------+------------------------------------------+-------------------------------------------------------------------+
+
+;; If we want Sphero to respond to our packets we have to modify the
+;; answer bit in the SOP2 field.
+;; Answer – When set to 1, act upon this command and send a reply. When 0, act but do not reply.
+;; Reset timeout – When set to 1, reset the client inactivity timeout after executing this command. When 0, do not reset the timer.
+;; +----------+-------+-------+---------------+--------+
+;; | bits 7-4 | bit 3 | bit 2 |     bit 1     | bit 0  |
+;; +----------+-------+-------+---------------+--------+
+;; |     1111 |     1 |     1 | Reset timeout | Answer |
+;; +----------+-------+-------+---------------+--------+
+;; In short, #xFF will ask the Sphero to reply.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Helper Functions
@@ -80,4 +92,3 @@
          (BYTES (list->bytes PACK)))
     (log-info (format "Packet: ~a" PACK))
     BYTES))
-

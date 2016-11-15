@@ -1,7 +1,7 @@
 #lang racket
 
-;;   ____                                          _     
-;;  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
+;;   ____                                          _
+;;  / ___|___  _ __ ___  _ __ ___   __ _ _ __   __| |___
 ;; | |   / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
 ;; | |__| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
 ;;  \____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
@@ -9,7 +9,7 @@
 (require "packets.rkt")
 (require "sphero-commands.rkt")
 
-(provide cmd-roll cmd-color cmd-set-cd)
+(provide cmd-roll cmd-color cmd-set-cd cmd-color-get)
 
 ;; Each function in this module generates bytes to send over the wire
 ;; to the Sphero.
@@ -22,7 +22,7 @@
 ;; +-----+-----+-----+------+-------+---------+---------+-------+
 
 (define (cmd-roll speed heading seq)
-  (let ((SOP2     #xFE)
+  (let ((SOP2     #xFF)
         (DID      #x02)
         (CID      CMD_ROLL)
         (SEQ      seq)
@@ -44,14 +44,16 @@
 ;; between an application connecting and sending this command."
 
 (define (cmd-color red green blue seq)
-  (let ((SOP2     #xFE)
+  (let ((SOP2     #xFF)
         (DID      #x02)
         (CID      CMD_SET_RGB_LED)
         (SEQ      seq)
         ;; data
-        (COLOR    (list red green blue)) ;; Reverse 
-        (FLAG     #x01)) 
+        (COLOR    (list red green blue)) ;; Reverse
+        (FLAG     #x01))
     (make-packet SOP2 DID CID SEQ (append COLOR (list FLAG)))))
+
+
 
 
 ;; Packet format
@@ -62,10 +64,10 @@
 ;; +-----+-----+-----+------+
 
 (define (cmd-color-get seq)
-  (let ((SOP2     #xFE)
+  (let ((SOP2     #xFF)
         (DID      #x02)
         (CID      CMD_GET_RGB_LED)
-        (SEQ      seq)) 
+        (SEQ      seq))
     (make-packet SOP2 DID CID SEQ '())))
 
 
@@ -89,11 +91,11 @@
 ;; +------------+------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 (define (cmd-set-cd x-threshold y-threshold x-speed y-speed dead-time seq)
-  (let* ((SOP2     #xFE)
+  (let* ((SOP2     #xFF)
          (DID      #x02)
          (CID      CMD_SET_COLLISION_DET)
          (SEQ      seq)
          ;; data
          (METH     #x01)
-         (DATA    (list METH x-threshold x-speed y-threshold y-speed dead-time))) 
+         (DATA    (list METH x-threshold x-speed y-threshold y-speed dead-time)))
     (make-packet SOP2 DID CID SEQ (cons METH DATA))))
